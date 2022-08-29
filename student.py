@@ -18,6 +18,7 @@ else:
 #prompt for relevant information
 last = input("What is your last name as shown in Weber State's records?\n").title()
 first_weber = input("What is your first name as shown in Weber State's records?\n").title()
+first_nuames = ''
 if input("Does your first name in Weber State's records match the first name in NUAMES's records?(Y/n)\n").lower() in("no","n"):
 	first_nuames = input("What is your first name in NUAMES's records?\n").title()
 else:
