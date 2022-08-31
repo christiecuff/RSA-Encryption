@@ -1,16 +1,6 @@
-import os, rsa, shelve
-
-class Student():
-	def __init__(self, data, github):
-		self.period = data[3]
-		self.weber = data[4]
-		self.github = github
-		self.name = f"{data[0]}, {data[1]}"
-		if data[2]:
-			self.name += f" ({data[2]})"		
-	def __str__(self):
-		rep = f"{self.name}, {self.github}, P{self.period}, {self.weber}"
-		return rep
+#This must be run though the actual RSA repo,
+#but not till everyone has made their pull request
+import os, rsa
 
 def generate_keys():
 	print("WARNING\n\tExisting messages will be unextractable with new keys.")
@@ -29,7 +19,7 @@ def extract():
 	else:
 		print("Could not locate 'private.pen' file")
 		return
-	students = {}
+	students = []
 	os.chdir('students')
 	#create a list of files that have the extension .txt
 	files = [f for f in os.listdir() if os.path.isfile(f) and ".dat" in f]
@@ -38,61 +28,78 @@ def extract():
 			msg = t.read()
 		decoded = rsa.decrypt(msg, private).decode('ascii')
 		data = decoded.split(',')
-		github = f.replace('.dat','')
-		students[github] = Student(data, github)
+		data.append(f.replace('.dat',''))
+		students.append(data)
 	os.chdir('..')
-	with shelve.open('students.dat') as f:
-		for name in students.keys():
-			print(type(students[name]))
-			f[name] = students[name]
-	print("students.dat created")
+	record_student(students)
 
-def check():
-	if os.path.exists('students.dat'):
-		with shelve.open('students.dat') as data:
-			for e in data:
-				print(data[e])
-	else:
-		print("students.dat does not exist!")
+def record_students(students):
+	with open("students.txt", 'w') as f:
+		f.write("last, first_weber, first_nuames, period, weber, github\n")
+		f.writelines(students)
+	print("Student record created")
 
-def imports():
-	if os.path.exists('students.dat'):
-		out = ""
-		with shelve.open('students.dat') as data:
-			for e in data:
-				out += f"{data[e].weber}, "
-		with open('import.txt','w') as f:
-			f.write(out)
-		print("import.txt created")
-	else:
-		print("students.dat does not exist!")
+def pr_check():
+	#return all open PR from repo
+	os.system(f"gh pr --repo nuames-cs/RSA-Encryption list --limit 100 --state open > all.txt")
+	#os.system("gh pr list --limit 1 --state open > next.txt")
+	with open("all.txt", 'r') as f:
+		data = f.readlines()
+	os.system("rm all.txt")
+	return data
+
+def pr_next(all):
+	try:
+		data = all.pop()
+		pr = int(data.split('\t')[0])
+		return pr
+	except IndexError:
+		return False
+	except ValueError:
+		return False
+
+def pr_code(pr):
+	#access get access the the PRs changed files
+	#return the files?
+	os.system(f"gh pr --repo nuames-cs/RSA-Encryption diff {pr} --name-only > files.txt")
+	with open("files.txt", 'r') as f:
+		data = f.readlines()
+	os.system("rm files.txt")
+	for i in range(len(data)):
+		data[i] = data[i].strip()
+	return data
+
+def pr_validate(files):
+	#validate changes in PR to only be new encoded message.
+	#delete any other changes
+	bad = False
+	dat_found = False
+	for f in files:
+		if f[:9] == 'students/' and f[-4:] == '.dat':
+			dat_found = True
+		elif f != 'student.py' and f != 'settings.json':
+			bad = True
+	if not dat_found:
+		bad = True
+	return not bad
+
+def pr_merge(pr, valid):
+	#merge the current open
+	print(f"{pr}: {valid}")
+	#os.system(f"gh pr merge {pr} -m")
 
 def main():
-	print(
-'''
-\tMENU
-1 - Extract data
-2 - Check database
-3 - Create canvas import file
-4 - Generate Keys
-0 - Quit
-''')
-	op = -1
-	while op not in range(5):
-		try:
-			op = int(input("What's your choice?\n"))
-		except ValueError:
-			print("That wasn't a number.")
-	if op == 1:
-		#extract username
-		extract()
-	elif op == 2:
-		check()
-	elif op == 3:
-		imports()
-	elif op == 4:
-		#generate keys
-		generate_keys()
+	all = pr_check()
+	next = pr_next(all)
+	bad = []
+	while next:
+		valid = pr_validate(pr_code(next))
+		pr_merge(next, valid)
+		next = pr_next(all)
+	#extract()
 
 if __name__ == "__main__":
 	main()
+
+
+
