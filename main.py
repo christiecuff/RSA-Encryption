@@ -2,16 +2,6 @@
 #but not till everyone has made their pull request
 import os, rsa
 
-def generate_keys():
-	print("WARNING\n\tExisting messages will be unextractable with new keys.")
-	if input("Continue?(Y/n)\n").lower() in ('y','yes'):
-		public, private = rsa.newkeys(1024)
-		with open("public.pen", 'wb') as f:
-			f.write(public.save_pkcs1('PEM'))
-		with open("private.pen", 'wb') as f:
-			f.write(private.save_pkcs1('PEM'))
-		print("New public and private keys have been generated.")
-
 def extract():
 	if os.path.exists("private.pen"):
 		with open("private.pen", 'rb') as f:
@@ -96,10 +86,7 @@ def main():
 		valid = pr_validate(pr_code(next))
 		pr_merge(next, valid)
 		next = pr_next(all)
-	#extract()
+	extract()
 
 if __name__ == "__main__":
 	main()
-
-
-
