@@ -19,11 +19,12 @@ def extract():
 		decoded = rsa.decrypt(msg, private).decode('ascii')
 		data = decoded.split(',')
 		data.append(f.replace('.dat',''))
-		students.append(data)
+		students.append(','.join(data)+'\n')
 	os.chdir('..')
-	record_student(students)
+	record_students(students)
 
 def record_students(students):
+	os.system("git pull")
 	with open("students.txt", 'w') as f:
 		f.write("last, first_weber, first_nuames, period, weber, github\n")
 		f.writelines(students)
@@ -75,8 +76,9 @@ def pr_validate(files):
 
 def pr_merge(pr, valid):
 	#merge the current open
-	print(f"{pr}: {valid}")
-	#os.system(f"gh pr merge {pr} -m")
+	#print(f"{pr}: {valid}")
+	if valid:
+		os.system(f"gh pr merge {pr} -m")
 
 def main():
 	all = pr_check()
