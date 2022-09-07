@@ -13,5 +13,5 @@
 	//You better know what you're doing if you change these settings
 	"editor.insertSpaces": false,
 	"editor.detectIndentation": false,
-	"editor.renderWhitespace": "boundary"
+	"editor.renderWhitespace": "boundary",
 }
