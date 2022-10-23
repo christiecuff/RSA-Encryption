@@ -1,6 +1,7 @@
+//ctrl+p "ext install github.codespaces", install
 //ctrl+p “ext install silofy.hackthebox”, install
-//ctrl+p "ext install qwtel.sqlite-viewer", install
-//ctrl+p "ext install github.codespaces", install	
+//crtl+p "ext install bierner.github-markdown-preview", install
+
 {	//hacker theme with WGA2.0 compliance
 	"workbench.colorTheme": "Hack The Box",
 	"workbench.colorCustomizations": {
